@@ -1,24 +1,47 @@
 import React, { useState } from "react";
+import axios from "axios";
 import Cookies from "js-cookie";
 import { motion, AnimatePresence } from "framer-motion";
+import { Link } from 'react-router-dom';  // Importar Link do React Router
 
 const Login = () => {
   const [formType, setFormType] = useState(null); // Estado para alternar entre Cliente e Atendente
   const [cpf, setCpf] = useState("");
+  const [email, setEmail] = useState("");  // Para Atendente
   const [password, setPassword] = useState("");
-
-  const handleLogin = (type) => {
-    const loginData = { cpf, password, type };
-
-    // Simulação de login - substitua pela integração com a API
-    const fakeApiResponse = { token: `${type}_hash_${Date.now()}` };
-
-    // Salva o hash nos cookies
-    Cookies.set("auth_token", fakeApiResponse.token, { expires: 1 });
-
-    console.log("Login realizado:", loginData);
-    console.log("Token salvo nos cookies:", fakeApiResponse.token);
-    alert(`Login realizado como ${type}!`);
+  const [error, setError] = useState("");  // Para mostrar erros no login
+  
+  const handleLogin = async () => {
+    try {
+      // Enviar o 'email' para atendente e 'cpf' para cliente
+      const loginData = formType === "cliente"
+        ? { cpf, senha: password }
+        : { email, senha: password }; // Para o atendente, enviamos o 'email'
+  
+      const response = await axios.post(
+        formType === "cliente"
+          ? "http://127.0.0.1:8000/api/clientes/login/" // URL para login de cliente
+          : "http://127.0.0.1:8000/api/atendentes/login/", // URL para login de atendente
+        loginData,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,
+        }
+      );
+  
+      console.log("Login successful:", response.data);
+      alert("Login realizado com sucesso!");
+  
+      Cookies.set("auth_token", response.data.token, { expires: 1 });
+  
+      // Redirecionar para o local correto (paciente ou atendente)
+      window.location.href = formType === "cliente" ? "/paciente" : "/atendente";  // Ajuste o redirecionamento
+    } catch (error) {
+      console.error("Erro ao fazer login:", error);
+      setError("Erro ao fazer login, verifique as credenciais!");
+    }
   };
 
   const renderForm = () => (
@@ -32,11 +55,12 @@ const Login = () => {
       <h3 style={styles.formTitle}>
         Login como {formType === "cliente" ? "Cliente" : "Atendente"}
       </h3>
+      {error && <p style={{ color: 'red' }}>{error}</p>}
       <input
         type="text"
-        placeholder="CPF"
-        value={cpf}
-        onChange={(e) => setCpf(e.target.value)}
+        placeholder={formType === "cliente" ? "CPF" : "Email"}
+        value={formType === "cliente" ? cpf : email}
+        onChange={(e) => formType === "cliente" ? setCpf(e.target.value) : setEmail(e.target.value)}
         style={styles.input}
       />
       <input
@@ -48,7 +72,7 @@ const Login = () => {
       />
       <button
         style={{ ...styles.button, ...styles.btnEntrar }}
-        onClick={() => handleLogin(formType)}
+        onClick={handleLogin}
       >
         ENTRAR
       </button>
@@ -58,9 +82,9 @@ const Login = () => {
       >
         VOLTAR
       </button>
-      <a href="#" style={styles.link}>
+      <Link to="/redefinir" style={styles.link}>
         Redefinir senha
-      </a>
+    </Link>
     </motion.div>
   );
 
@@ -123,37 +147,6 @@ const Login = () => {
             <a href="#" style={styles.footerLink}>
               Page
             </a>
-            <a href="#" style={styles.footerLink}>
-              Page
-            </a>
-          </div>
-          <div>
-            <a href="#" style={styles.footerLink}>
-              Topic
-            </a>
-            <a href="#" style={styles.footerLink}>
-              Page
-            </a>
-            <a href="#" style={styles.footerLink}>
-              Page
-            </a>
-            <a href="#" style={styles.footerLink}>
-              Page
-            </a>
-          </div>
-          <div>
-            <a href="#" style={styles.footerLink}>
-              Topic
-            </a>
-            <a href="#" style={styles.footerLink}>
-              Page
-            </a>
-            <a href="#" style={styles.footerLink}>
-              Page
-            </a>
-            <a href="#" style={styles.footerLink}>
-              Page
-            </a>
           </div>
         </div>
         <div style={styles.socialIcons}>
@@ -166,7 +159,6 @@ const Login = () => {
     </div>
   );
 };
-
 const styles = {
   container: {
     margin: 0,

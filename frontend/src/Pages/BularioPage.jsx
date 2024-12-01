@@ -1,101 +1,121 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { TextField, Button, Typography, Box, CircularProgress } from '@mui/material';
+import { GoogleGenerativeAI } from '@google/generative-ai'; // Importando a biblioteca do Gemini
 
-function BularioPage() {
+const BularioPage = () => {
+  const [medicamento, setMedicamento] = useState('Dipirona');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [medicamentoInfo, setMedicamentoInfo] = useState('');
+
+  // Função para formatar as informações do medicamento
+const formatMedicamentoInfo = (info) => {
+  return info
+    .replace(/(\d+\.)/g, '<strong>$&</strong>') // Deixa os números das listas em negrito
+     // Deixa os títulos em negrito
+    .replace(/\*\*/g, '')  // Remove os "**"
+    .replace(/^\s*\n/gm, '') // Remove linhas em branco
+    .replace(/^(\d+\.\s)/gm, '<li><strong>$1</strong>') // Cria uma lista de tópicos com números em negrito
+    .replace(/(\n)/gm, '</li><li>')  // Coloca os itens da lista em <li>
+    .replace(/<li><li>/gm, '<li>'); // Corrige múltiplas listas dentro de uma só
+};
+
+  // Função de busca do medicamento e integração com o Gemini
+const fetchMedicamentoDetails = async (medicamento, setMedicamentoInfo, setError, setLoading) => {
+  setLoading(true);  // Ativa o carregamento
+  try {
+    // Substitua a chave da API com sua chave real, se necessário
+    const genAI = new GoogleGenerativeAI('AIzaSyANWW0Tlbheq1AV37hWDIYJLjJv4GaGt_Y');
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const prompt = `Conte-me em 20 linhas tudo separadinho em tópicos sobre o bulário do medicamento: ${medicamento}.`;
+    
+    // Gera o conteúdo a partir do modelo de AI
+    const result = await model.generateContent(prompt);
+    const formattedInfo = formatMedicamentoInfo(result.response.text());  // Formatação da resposta
+
+    // Atualiza os detalhes do medicamento
+    setMedicamentoInfo(formattedInfo);
+  } catch (error) {
+    setError('Erro ao buscar informações do medicamento.');
+    console.error(error);
+  } finally {
+    setLoading(false);  // Desativa o carregamento
+  }
+};
+
+// Função de busca que será chamada no evento de busca
+const handleSearch = async () => {
+  if (!medicamento.trim()) return setError('Por favor, digite o nome de um medicamento.');
+
+  setError(null);  // Reseta qualquer erro anterior
+  await fetchMedicamentoDetails(medicamento, setMedicamentoInfo, setError, setLoading);
+};
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', backgroundColor: '#fff' }}>
+    <Box sx={{ fontFamily: 'Arial, sans-serif', backgroundColor: '#f9f9f9' }}>
+      {/* Header */}
       <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 40px', borderBottom: '1px solid #ddd' }}>
         <div style={{ fontSize: '14px', color: '#555' }}>
           <a href="#">Saúde & Bem-Estar</a> | <a href="#">Anvisa</a> | <a href="#">Medicamentos</a>
         </div>
-        <div style={{ fontSize: '14px', color: '#555' }}>
-          <select style={{ border: 'none', background: 'none', fontSize: '14px', color: '#555', cursor: 'pointer' }}>
-            <option>Olá, Usuário</option>
-          </select>
-        </div>
+        <select style={{ border: 'none', background: 'none', fontSize: '14px', color: '#555', cursor: 'pointer' }}>
+          <option>Olá, Usuário</option>
+        </select>
       </header>
 
+      {/* Main Content */}
       <main style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '20px 40px', textAlign: 'left', flex: '1' }}>
         <h1 style={{ fontSize: '36px', fontWeight: 'bold', color: '#000' }}>Farmacinha</h1>
-        <h2 style={{ fontSize: '22px', color: '#d81b1b', marginTop: '-10px' }}>Saúde & Bem-Estar</h2>
-        <h3 style={{ fontSize: '18px', color: '#000', marginTop: '-5px' }}>Cuidando de Você com Clareza e Confiança</h3>
+        <h2 style={{ fontSize: '22px', color: '#d81b1b' }}>Saúde & Bem-Estar</h2>
+        <h3 style={{ fontSize: '18px', color: '#000' }}>Cuidando de Você com Clareza e Confiança</h3>
 
+        {/* Barra de Pesquisa */}
         <div style={{ display: 'flex', alignItems: 'center', margin: '20px 0', width: '100%', maxWidth: '600px' }}>
-          <input type="text" placeholder="Buscar bula" style={{ flex: '1', padding: '10px', border: '1px solid #ccc', borderRadius: '4px 0 0 4px', fontSize: '16px' }} />
-          <button style={{ padding: '10px 20px', border: 'none', backgroundColor: '#000', color: '#fff', cursor: 'pointer', borderRadius: '0 4px 4px 0', fontSize: '16px' }}>Pesquisar</button>
+          <input
+            type="text"
+            placeholder="Buscar bula"
+            style={{ flex: '1', padding: '10px', border: '1px solid #ccc', borderRadius: '4px 0 0 4px', fontSize: '16px' }}
+            value={medicamento}
+            onChange={(e) => setMedicamento(e.target.value)}
+          />
+          <button
+            onClick={handleSearch}
+            style={{
+              padding: '10px 20px',
+              backgroundColor: '#000',
+              color: '#fff',
+              borderRadius: '0 4px 4px 0',
+              fontSize: '16px',
+              cursor: 'pointer',
+              border: 'none',
+            }}
+            disabled={loading}
+          >
+            {loading ? <CircularProgress size={24} sx={{ color: 'white' }} /> : 'Pesquisar'}
+          </button>
         </div>
 
+        {/* Informações do Medicamento */}
         <div style={{ width: '100%', maxWidth: '800px', fontSize: '16px', lineHeight: '1.6', marginTop: '20px', color: '#333' }}>
-          <p><strong>Ozempic (semaglutida)</strong> é um medicamento utilizado para o tratamento de diabetes tipo 2.</p>
-          <p><strong>Indicações:</strong></p>
-          <ul>
-            <li>Controle da glicemia em adultos com diabetes tipo 2.</li>
-            <li>Auxílio na perda de peso em pessoas com obesidade ou sobrepeso associado a condições como diabetes.</li>
-          </ul>
+          {error && <Typography variant="body1" sx={{ color: 'red' }}>{error}</Typography>}
 
-          <p><strong>Como funciona:</strong></p>
-          <ul>
-            <li>A semaglutida imita a ação do hormônio GLP-1, aumentando a liberação de insulina e diminuindo o apetite, o que ajuda a controlar os níveis de açúcar no sangue e a promover a perda de peso.</li>
-          </ul>
-
-          <p><strong>Modo de uso:</strong></p>
-          <ul>
-            <li>Administração subcutânea (injeção) uma vez por semana.</li>
-            <li>Dose inicial de 0,25 mg, podendo ser aumentada gradualmente conforme orientação médica.</li>
-          </ul>
-
-          <p><strong>Contraindicações:</strong></p>
-          <ul>
-            <li>Alergia à semaglutida ou aos componentes da fórmula.</li>
-            <li>Histórico de câncer de tireoide medular ou neoplasia endócrina múltipla tipo 2.</li>
-          </ul>
-
-          <p><strong>Efeitos colaterais:</strong></p>
-          <ul>
-            <li>Náusea, vômito e diarreia.</li>
-            <li>Dor abdominal e constipação.</li>
-            <li>Hipoglicemia (nível baixo de açúcar no sangue), especialmente quando usado com outros medicamentos antidiabéticos.</li>
-          </ul>
-
-          <p><strong>Precauções:</strong></p>
-          <ul>
-            <li>Usar com cautela em pessoas com problemas gastrointestinais graves.</li>
-            <li>Monitorar a função renal em pessoas com histórico de insuficiência renal.</li>
-            <li>Não é indicado para o tratamento de diabetes tipo 1.</li>
-          </ul>
+          {medicamentoInfo ? (
+            <div dangerouslySetInnerHTML={{ __html: medicamentoInfo }} />
+          ) : (
+            !loading && <Typography variant="body1">Digite um nome de medicamento e clique em 'Pesquisar'.</Typography>
+          )}
         </div>
+
+        {/* Carregando... */}
+        {loading && !medicamentoInfo && (
+          <Box sx={{ marginTop: '20px', textAlign: 'center' }}>
+            <CircularProgress size={50} sx={{ display: 'block', margin: '0 auto' }} />
+            <Typography variant="body2" sx={{ marginTop: '10px' }}>Carregando informações...</Typography>
+          </Box>
+        )}
       </main>
-
-      <footer style={{ backgroundColor: '#f9f9f9', width: '100%', padding: '20px 0', textAlign: 'center', borderTop: '1px solid #ddd' }}>
-        <div style={{ display: 'flex', justifyContent: 'center', gap: '50px' }}>
-          <div><a href="#">Site name</a></div>
-          <div>
-            <a href="#">Topic</a>
-            <a href="#">Page</a>
-            <a href="#">Page</a>
-            <a href="#">Page</a>
-          </div>
-          <div>
-            <a href="#">Topic</a>
-            <a href="#">Page</a>
-            <a href="#">Page</a>
-            <a href="#">Page</a>
-          </div>
-          <div>
-            <a href="#">Topic</a>
-            <a href="#">Page</a>
-            <a href="#">Page</a>
-            <a href="#">Page</a>
-          </div>
-        </div>
-        <div style={{ display: 'flex', justifyContent: 'center', gap: '15px', marginTop: '20px' }}>
-          <i className="fab fa-facebook" style={{ fontSize: '20px', color: '#555' }}></i>
-          <i className="fab fa-linkedin" style={{ fontSize: '20px', color: '#555' }}></i>
-          <i className="fab fa-youtube" style={{ fontSize: '20px', color: '#555' }}></i>
-          <i className="fab fa-instagram" style={{ fontSize: '20px', color: '#555' }}></i>
-        </div>
-      </footer>
-    </div>
+    </Box>
   );
-}
+};
 
 export default BularioPage;

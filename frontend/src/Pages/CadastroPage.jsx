@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
-import { Navigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { Alert } from "@mui/material";
+import CheckIcon from '@mui/icons-material/Check'; // Ícone de confirmação
 
 const Cadastro = () => {
-  const [view, setView] = useState(""); // "cliente", "atendente" ou vazio para decidir a visualização inicial
+  const [view, setView] = useState(""); // "cliente", "atendente" ou vazio
   const [formData, setFormData] = useState({
     nome: "",
     cnpj: "",
@@ -12,8 +14,11 @@ const Cadastro = () => {
     email: "",
     senha: "",
   });
+  const [cnpjValid, setCnpjValid] = useState(null); // Estado para validação de CNPJ
+  const [alertMessage, setAlertMessage] = useState(""); // Estado para mensagem do alerta
+  const navigate = useNavigate(); // Inicializando o hook useNavigate
 
-  // Animações
+  // Animação dos containers
   const containerVariant = {
     hidden: { opacity: 0, scale: 0.9 },
     visible: { opacity: 1, scale: 1, transition: { duration: 0.5 } },
@@ -23,27 +28,56 @@ const Cadastro = () => {
   const handleBack = () => {
     setView(""); // Voltar à tela inicial
     setFormData({ nome: "", cnpj: "", cpf: "", email: "", senha: "" });
+    setCnpjValid(null); // Resetar o estado de validação do CNPJ
+    setAlertMessage(""); // Limpar a mensagem do alerta
   };
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+
+    // Validação de CNPJ no campo de CNPJ (somente para atendentes)
+    if (name === "cnpj" && value.length === 14) {
+      axios.get(`https://api.cnpja.com/office/${value}`, {
+        headers: { Authorization: '507f5121-2175-4925-8b5b-5f4ff17b3312-3165bba4-7fe0-461b-8092-5b90c99c4088' }
+      })
+        .then((response) => {
+          setCnpjValid(true); // CNPJ válido
+          setAlertMessage("CNPJ válido!");
+        })
+        .catch((error) => {
+          setCnpjValid(false); // CNPJ inválido
+          setAlertMessage("CNPJ inválido!");
+        });
+    }
   };
 
   const handleSubmit = async (type) => {
+    let formDataToSend = { ...formData };
+
+    // Remover CPF se for atendente, e remover CNPJ se for cliente
+    if (type === "Atendente") {
+      delete formDataToSend.cpf; // Não envia CPF para atendente
+    } else if (type === "Cliente") {
+      delete formDataToSend.cnpj; // Não envia CNPJ para cliente
+    }
+
     const url =
       type === "Atendente"
-        ? "http://127.0.0.1:8000/api/registro/atendente/" // Endpoint do registro de atendente
-        : "http://127.0.0.1:8000/api/registro/cliente/"; // Endpoint do registro de cliente
+        ? "http://127.0.0.1:8000/api/atendentes/cadastrar/"
+        : "http://127.0.0.1:8000/api/clientes/cadastrar/";
+
+    console.log("FormData:", formDataToSend); // Log para verificar os dados enviados
 
     try {
-      const response = await axios.post(url, formData); // Envio de dados para o endpoint correto
+      const response = await axios.post(url, formDataToSend);
       alert(`${type} registrado com sucesso!`);
       console.log("Response:", response.data);
-      handleBack(); // Reseta o formulário após o sucesso]
-      Navigate('/login')
+      handleBack(); // Resetar o formulário
+      navigate("/login");
     } catch (error) {
       console.error("Erro ao enviar:", error.response?.data || error.message);
-      alert("Ocorreu um erro. Verifique os dados e tente novamente.");
+      alert("Erro ao registrar. Verifique os dados e tente novamente.");
     }
   };
 
@@ -52,7 +86,7 @@ const Cadastro = () => {
       {/* Navbar */}
       <header style={styles.navbar}>
         <div style={styles.logo}>
-          <h1 style={styles.logoText}>Saúde&<br />Bem-Estar</h1>
+          <h1 style={styles.logoText}>Farmacinha</h1>
         </div>
         <nav>
           <ul style={styles.navLinks}>
@@ -72,6 +106,12 @@ const Cadastro = () => {
       {/* Conteúdo */}
       <div style={styles.content}>
         <AnimatePresence>
+          {/* Título e Subtítulo */}
+          <div style={styles.titleContainer}>
+            <h1 style={styles.mainTitle}>Farmacinha</h1>
+            <h2 style={styles.subtitle}>Formulário de Cadastro</h2>
+          </div>
+
           {/* Tela de Escolha */}
           {view === "" && (
             <motion.div
@@ -129,6 +169,11 @@ const Cadastro = () => {
                 onChange={handleChange}
                 style={styles.input}
               />
+              {alertMessage && (
+                <Alert icon={<CheckIcon fontSize="inherit" />} severity={cnpjValid ? "success" : "error"}>
+                  {alertMessage}
+                </Alert>
+              )}
               <input
                 type="email"
                 placeholder="E-mail"
@@ -240,39 +285,100 @@ const styles = {
     padding: "10px 20px",
     position: "fixed",
     top: 0,
-    zIndex: 1000,
+    left: 0,
+    right: 0,
+    zIndex: 10,
   },
   logo: {
-    marginLeft: "20px",
+    display: "flex",
+    alignItems: "center",
   },
   logoText: {
-    fontSize: "18px",
-    lineHeight: "1.2",
+    fontSize: "24px",
+    fontWeight: "bold",
+    color: "#333",
   },
   navLinks: {
-    listStyle: "none",
     display: "flex",
-    gap: "20px",
-    marginRight: "20px",
+    listStyle: "none",
   },
   navLink: {
+    color: "#333",
     textDecoration: "none",
-    color: "black",
-    fontWeight: "bold",
+    marginLeft: "20px",
+    fontSize: "16px",
   },
   content: {
-    marginTop: "150px", // Para dar espaço abaixo da Navbar
-    width: "100%",
     display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
     flexDirection: "column",
+    alignItems: "center",
+    marginTop: "120px", // Espaço após a navbar
+    width: "100%",
+  },
+  titleContainer: {
+    textAlign: "center",
+    marginBottom: "40px", // Espaço entre os títulos e os formulários
+  },
+  mainTitle: {
+    fontSize: "36px",
+    fontWeight: "bold",
+    color: "#333",
+  },
+  subtitle: {
+    fontSize: "24px",
+    fontWeight: "normal",
+    color: "red",
+  },
+  formContainer: {
+    width: "80%",
+    maxWidth: "500px",
+    padding: "20px",
+    backgroundColor: "#fff",
+    boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+    borderRadius: "8px",
+  },
+  formTitle: {
+    fontSize: "24px",
+    fontWeight: "bold",
+    textAlign: "center",
+    marginBottom: "20px",
+  },
+  input: {
+    width: "100%",
+    padding: "12px",
+    marginBottom: "15px",
+    borderRadius: "4px",
+    border: "1px solid #ddd",
+    fontSize: "16px",
+  },
+  btnGroup: {
+    display: "flex",
+    justifyContent: "space-between",
+  },
+  btnCancel: {
+    backgroundColor: "#f44336",
+    color: "#fff",
+    padding: "10px 20px",
+    borderRadius: "4px",
+    cursor: "pointer",
+    border: "none",
+    fontSize: "16px",
+  },
+  btnSubmit: {
+    backgroundColor: "#4CAF50",
+    color: "#fff",
+    padding: "10px 20px",
+    borderRadius: "4px",
+    cursor: "pointer",
+    border: "none",
+    fontSize: "16px",
   },
   choiceContainer: {
     textAlign: "center",
+    marginBottom: "40px", 
   },
   title: {
-    fontSize: "24px",
+    fontSize: "30px",
     fontWeight: "bold",
     marginBottom: "20px",
   },
@@ -282,55 +388,14 @@ const styles = {
     gap: "20px",
   },
   optionBox: {
-    backgroundColor: "#4CAF50",
+    backgroundColor: "#2196F3",
     color: "#fff",
     padding: "20px 30px",
     borderRadius: "8px",
     cursor: "pointer",
     fontSize: "18px",
-    boxShadow: "0 2px 8px rgba(0, 0, 0, 0.2)",
-    textAlign: "center",
-  },
-  formContainer: {
-    backgroundColor: "#fff",
-    padding: "30px",
-    borderRadius: "8px",
-    boxShadow: "0 2px 10px rgba(0, 0, 0, 0.2)",
-    width: "300px",
-    textAlign: "center",
-  },
-  formTitle: {
-    fontSize: "20px",
-    marginBottom: "20px",
-  },
-  input: {
-    width: "100%",
-    padding: "10px",
-    margin: "10px 0",
-    border: "1px solid #ccc",
-    borderRadius: "4px",
-    fontSize: "16px",
-  },
-  btnGroup: {
-    display: "flex",
-    justifyContent: "space-between",
-    marginTop: "20px",
-  },
-  btnCancel: {
-    backgroundColor: "#d81b1b",
-    color: "#fff",
-    padding: "10px 15px",
-    border: "none",
-    borderRadius: "4px",
-    cursor: "pointer",
-  },
-  btnSubmit: {
-    backgroundColor: "#4CAF50",
-    color: "#fff",
-    padding: "10px 15px",
-    border: "none",
-    borderRadius: "4px",
-    cursor: "pointer",
+    fontWeight: "bold",
+    transition: "all 0.3s ease",
   },
 };
 

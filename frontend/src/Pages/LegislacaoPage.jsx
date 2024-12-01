@@ -1,62 +1,95 @@
 import React from 'react';
+import { AppBar, Toolbar, Typography, Box, Grid } from '@mui/material'; 
+import { Link as RouterLink } from 'react-router-dom'; // Para usar com o react-router-dom
 
 function LegislacaoPage() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', backgroundColor: '#fff' }}>
-      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 40px', borderBottom: '1px solid #ddd' }}>
-        <div style={{ fontSize: '14px', color: '#555' }}>
-          <a href="#" style={{ marginRight: '15px', textDecoration: 'none', color: '#555' }}>Saúde & Bem-Estar</a>
-          <a href="#" style={{ marginRight: '15px', textDecoration: 'none', color: '#555' }}>Bula</a>
-          <a href="#" style={{ marginRight: '15px', textDecoration: 'none', color: '#555' }}>Medicamentos</a>
-        </div>
-        <div style={{ fontSize: '14px', color: '#555' }}>
-          <select style={{ border: 'none', background: 'none', fontSize: '14px', color: '#555', cursor: 'pointer' }}>
-            <option>Olá, Usuário</option>
-          </select>
-        </div>
-      </header>
+      {/* Barra de navegação */}
+      <AppBar position="fixed" sx={{ backgroundColor: "#fff", boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)", zIndex: 1000 }}>
+        <Toolbar sx={{ display: "flex", justifyContent: "flex-start", alignItems: "center", padding: "0 20px" }}>
+          <Typography variant="h6" sx={{ color: "#333", fontWeight: "bold", textShadow: "2px 2px 4px rgba(0, 0, 0, 0.3)", marginRight: "30px" }}>
+            Saúde &<br />Bem-Estar
+          </Typography>
+          <Box sx={{ display: "flex", gap: "30px", alignItems: "center" }}>
+            <RouterLink to="/duvidas" style={{ textDecoration: "underline", color: "#333", fontSize: "16px", marginBottom: "5px", textUnderlineOffset: "5px", transition: "all 0.3s ease" }}>
+              Dúvidas
+            </RouterLink>
+            <RouterLink to="/legislacao" style={{ textDecoration: "underline", color: "#333", fontSize: "16px", marginBottom: "5px", textUnderlineOffset: "5px", transition: "all 0.3s ease" }}>
+              Legislação
+            </RouterLink>
+          </Box>
+        </Toolbar>
+      </AppBar>
 
-      <main style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '20px 40px', textAlign: 'center', flex: '1' }}>
-        <h1 style={{ fontSize: '36px', fontWeight: 'bold', color: '#000' }}>Farmacinha</h1>
-        <h2 style={{ fontSize: '22px', color: '#d81b1b', marginTop: '-10px' }}>Saúde & Bem-Estar</h2>
-        <h3 style={{ fontSize: '18px', color: '#000', marginTop: '-5px' }}>Cuidando de Você com Clareza e Confiança</h3>
+      {/* Seção de Imagem e Texto */}
+      <Box sx={{ textAlign: "center", padding: "120px 20px 40px", maxWidth: "1200px", margin: "0 auto" }}>
+        <Typography variant="h1" sx={{ fontSize: "64px", fontWeight: "bold", color: "#333", textShadow: "2px 2px 4px rgba(0, 0, 0, 0.3)" }}>
+          Farmacinha
+        </Typography>
+        <Typography variant="h2" sx={{ fontSize: "48px", fontWeight: "600", color: "red" }}>
+          Saúde & Bem-Estar
+        </Typography>
+        <Typography variant="h5" sx={{ marginTop: "20px", fontSize: "32px", color: "#555" }}>
+          Cuidando de Você com Clareza e Confiança
+        </Typography>
+        <Typography variant="body1" sx={{ fontSize: "18px", color: "#777", lineHeight: "1.6", maxWidth: "800px", margin: "0 auto", marginTop: "30px" }}>
+          Se você está buscando medicamentos com qualidade e preço justo, a Farmacinha é a solução ideal! Oferecemos a melhor experiência de compra online com rapidez e eficiência. Encontre os melhores produtos para o seu bem-estar.
+        </Typography>
+      </Box>
 
-        <div style={{ marginTop: '50px', textAlign: 'left' }}>
-          <a href="#" style={{ display: 'block', fontSize: '18px', color: '#d81b1b', textDecoration: 'none', margin: '10px 0', fontWeight: 'bold' }}>Clique aqui para encontrar a RDC nº 471/2021 (Antibióticos)</a>
-          <a href="#" style={{ display: 'block', fontSize: '18px', color: '#d81b1b', textDecoration: 'none', margin: '10px 0', fontWeight: 'bold' }}>Clique aqui para encontrar a Portaria 344/98 (Psicotrópicos)</a>
-          <a href="#" style={{ display: 'block', fontSize: '18px', color: '#d81b1b', textDecoration: 'none', margin: '10px 0', fontWeight: 'bold' }}>Clique aqui para encontrar sobre Programa Farmácia Popular</a>
-        </div>
-      </main>
+      {/* Links de Legislação */}
+      <Box sx={{ textAlign: "center", marginTop: "5px", display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <Typography variant="h4" sx={{ fontSize: "32px", color: "#333", marginBottom: "30px" }}>
+          Legislação
+        </Typography>
 
-      <footer style={{ backgroundColor: '#f9f9f9', width: '100%', padding: '20px 0', textAlign: 'center', borderTop: '1px solid #ddd' }}>
-        <div style={{ display: 'flex', justifyContent: 'center', gap: '50px' }}>
-          <div><a href="#">Site name</a></div>
-          <div>
-            <a href="#">Topic</a>
-            <a href="#">Page</a>
-            <a href="#">Page</a>
-            <a href="#">Page</a>
-          </div>
-          <div>
-            <a href="#">Topic</a>
-            <a href="#">Page</a>
-            <a href="#">Page</a>
-            <a href="#">Page</a>
-          </div>
-          <div>
-            <a href="#">Topic</a>
-            <a href="#">Page</a>
-            <a href="#">Page</a>
-            <a href="#">Page</a>
-          </div>
-        </div>
-        <div style={{ display: 'flex', justifyContent: 'center', gap: '15px', marginTop: '20px' }}>
-          <i className="fab fa-facebook" style={{ fontSize: '20px', color: '#555' }}></i>
-          <i className="fab fa-linkedin" style={{ fontSize: '20px', color: '#555' }}></i>
-          <i className="fab fa-youtube" style={{ fontSize: '20px', color: '#555' }}></i>
-          <i className="fab fa-instagram" style={{ fontSize: '20px', color: '#555' }}></i>
-        </div>
-      </footer>
+        <Box sx={{ textAlign: "center", marginBottom: "20px", width: '300px' }}>
+          <a href="https://www.cff.org.br/userfiles/RDC%20471_21%20ANTIMICROBIANOS.pdf" 
+            style={{ display: 'block', fontSize: '18px', color: '#d81b1b', textDecoration: 'none', margin: '10px 0', fontWeight: 'bold' }} target="_blank" rel="noopener noreferrer">
+            Clique aqui para encontrar a RDC nº 471/2021 (Antibióticos)
+          </a>
+          <a href="https://bvsms.saude.gov.br/bvs/saudelegis/svs/1998/prt0344_12_05_1998_rep.html" 
+            style={{ display: 'block', fontSize: '18px', color: '#d81b1b', textDecoration: 'none', margin: '10px 0', fontWeight: 'bold' }} target="_blank" rel="noopener noreferrer">
+            Clique aqui para encontrar a Portaria 344/98 (Psicotrópicos)
+          </a>
+          <a href="https://www.gov.br/saude/pt-br/composicao/sectics/farmacia-popular" 
+            style={{ display: 'block', fontSize: '18px', color: '#d81b1b', textDecoration: 'none', margin: '10px 0', fontWeight: 'bold' }} target="_blank" rel="noopener noreferrer">
+            Clique aqui para encontrar sobre o Programa Farmácia Popular
+          </a>
+        </Box>
+      </Box>
+
+      {/* Rodapé Fixo */}
+      <Box sx={{
+        backgroundColor: "#333", 
+        padding: "20px", 
+        color: "#fff", 
+        position: "absolute", 
+        bottom: 0, 
+        width: "100%", 
+        textAlign: "center"
+      }}>
+        <Grid container spacing={2} alignItems="center" justifyContent="center">
+          <Grid item xs={12}>
+            <Typography variant="h6" sx={{ fontWeight: "bold" }}>
+              Farmacinha
+            </Typography>
+          </Grid>
+
+          <Grid item xs={12} sx={{ display: "flex", justifyContent: "center", gap: "20px", marginTop: "10px" }}>
+            <a href="#" target="_blank" rel="noopener noreferrer">
+              <img src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/svgs/brands/facebook.svg" alt="Facebook" width="30px" />
+            </a>
+            <a href="#" target="_blank" rel="noopener noreferrer">
+              <img src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/svgs/brands/instagram.svg" alt="Instagram" width="30px" />
+            </a>
+            <a href="#" target="_blank" rel="noopener noreferrer">
+              <img src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/svgs/brands/twitter.svg" alt="Twitter" width="30px" />
+            </a>
+          </Grid>
+        </Grid>
+      </Box>
     </div>
   );
 }
